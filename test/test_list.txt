@@ -1,0 +1,6 @@
+- Can initialize a new circular buffer.
+- Can push an item to the buffer.
+- Can pop an item from the buffer.
+- Can check if the buffer is empty.
+- Can check if the buffer is full.
+- Can peek without actually popping.
