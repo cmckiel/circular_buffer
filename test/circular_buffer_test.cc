@@ -5,20 +5,32 @@ extern "C" {
 #include "circular_buffer.h"
 }
 
-TEST(CircularBufferTest, DoesInitializeToZero)
+TEST(CircularBufferTest, DoesInitialize)
 {
-    data_item_t data = { .data = {0}, .size = CIRCULAR_BUFFER_DATA_ITEM_SIZE };
-    for (int i = 0; i < data.size; i++)
-    {
-        data.data[i] = 1;
-    }
+    circular_buffer_ctx ctx;
+    EXPECT_EQ(true, circular_buffer_init(&ctx));
+}
 
-    // returns true
-    EXPECT_EQ(true, circular_buffer_init(&data));
+TEST(CircularBufferTest, DoesPushData)
+{
+    circular_buffer_ctx ctx;
+    circular_buffer_init(&ctx);
 
-    // data initialized to zero
-    for (int i = 0; i < data.size; i++)
-    {
-        EXPECT_EQ(0, data.data[i]);
-    }
+    EXPECT_EQ(true, circular_buffer_push(&ctx, 4));
+}
+
+TEST(CircularBufferTest, DoesPopData)
+{
+    int data = 0;
+    circular_buffer_ctx ctx;
+    circular_buffer_init(&ctx);
+
+    // If buffer is empty (just initialized) pop should return false.
+    EXPECT_EQ(false, circular_buffer_pop(&ctx, &data));
+
+    // Test that pop() can retrieve data.
+    data = 0;
+    circular_buffer_push(&ctx, 4);
+    EXPECT_EQ(true, circular_buffer_pop(&ctx, &data));
+    EXPECT_EQ(4, data);
 }
