@@ -7,10 +7,10 @@
 #define MAX_BUFFER_SIZE 1024
 
 typedef struct {
-    bool is_empty;
     uint8_t data[MAX_BUFFER_SIZE];
-    uint32_t head;
-    uint32_t tail;
+    uint16_t head;
+    uint16_t tail;
+    uint32_t current_byte_count;
 } circular_buffer_ctx;
 
 /**

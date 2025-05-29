@@ -11,6 +11,29 @@ TEST(CircularBufferTest, DoesInitialize)
     EXPECT_EQ(true, circular_buffer_init(&ctx));
 }
 
+TEST(CircularBufferTest, PopHandlesNULLCtx)
+{
+    uint8_t data = 0;
+    ASSERT_EQ(false, circular_buffer_pop(NULL, &data));
+}
+
+TEST(CircularBufferTest, PopHandlesNULLData)
+{
+    circular_buffer_ctx ctx;
+    ASSERT_EQ(false, circular_buffer_pop(&ctx, NULL));
+}
+
+TEST(CircularBufferTest, PushHandlesNULLCtx)
+{
+    uint8_t data = 0;
+    ASSERT_EQ(false, circular_buffer_push(NULL, data));
+}
+
+TEST(CircularBufferTest, InitHandlesNULLCtx)
+{
+    ASSERT_EQ(false, circular_buffer_init(NULL));
+}
+
 TEST(CircularBufferTest, DoesPushData)
 {
     circular_buffer_ctx ctx;
@@ -80,34 +103,11 @@ TEST(CircularBufferTest, DoesNotAccessOutOfBoundsOnEmptyPop)
     uint8_t data_out = 0;
     // Only modifiy ctx to setup a test, never in production.
     circular_buffer_ctx ctx = {
-        .is_empty = false,
         .data = { 0 },
-        .head = 0, // The top is pointed at the first element, a pop would be out of bounds.
-        .tail = 0,
+        .head = 0,
+        .tail = MAX_BUFFER_SIZE, // out of bounds index
+        .current_byte_count = 0,
     };
 
     ASSERT_EQ(false, circular_buffer_pop(&ctx, &data_out));
-}
-
-TEST(CircularBufferTest, PopHandlesNULLCtx)
-{
-    uint8_t data = 0;
-    ASSERT_EQ(false, circular_buffer_pop(NULL, &data));
-}
-
-TEST(CircularBufferTest, PopHandlesNULLData)
-{
-    circular_buffer_ctx ctx;
-    ASSERT_EQ(false, circular_buffer_pop(&ctx, NULL));
-}
-
-TEST(CircularBufferTest, PushHandlesNULLCtx)
-{
-    uint8_t data = 0;
-    ASSERT_EQ(false, circular_buffer_push(NULL, data));
-}
-
-TEST(CircularBufferTest, InitHandlesNULLCtx)
-{
-    ASSERT_EQ(false, circular_buffer_init(NULL));
 }

@@ -6,8 +6,9 @@ bool circular_buffer_init(circular_buffer_ctx *ctx)
 
     if (ctx)
     {
-        ctx->is_empty = true;
+        ctx->current_byte_count = 0;
         ctx->head = 0;
+        ctx->tail = 0;
         res = true;
     }
 
@@ -20,7 +21,7 @@ bool circular_buffer_push(circular_buffer_ctx *ctx, uint8_t data)
 
     if (ctx)
     {
-        ctx->is_empty = false;
+        ctx->current_byte_count += 1;
         ctx->data[ctx->head] = data;
         ctx->head++;
 
@@ -34,10 +35,10 @@ bool circular_buffer_pop(circular_buffer_ctx *ctx, uint8_t *data)
 {
     bool res = false;
 
-    if (data && ctx && ctx->is_empty == false && ctx->head > 0)
+    if (data && ctx && ctx->current_byte_count > 0 && ctx->tail < MAX_BUFFER_SIZE)
     {
-        ctx->head--;
-        *data = ctx->data[ctx->head];
+        *data = ctx->data[ctx->tail];
+        ctx->tail++;
         res = true;
     }
 
