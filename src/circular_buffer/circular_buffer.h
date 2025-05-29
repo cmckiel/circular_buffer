@@ -2,9 +2,15 @@
 #define _CIRCULAR_BUFFER_H
 
 #include <stdbool.h>
+#include <stdint.h>
+
+#define MAX_BUFFER_SIZE 1024
 
 typedef struct {
     bool is_empty;
+    uint8_t data[MAX_BUFFER_SIZE];
+    uint32_t head;
+    uint32_t tail;
 } circular_buffer_ctx;
 
 /**
@@ -23,7 +29,7 @@ bool circular_buffer_init(circular_buffer_ctx *ctx);
  *
  * @return true on success.
 */
-bool circular_buffer_push(circular_buffer_ctx *ctx, int data);
+bool circular_buffer_push(circular_buffer_ctx *ctx, uint8_t data);
 
 /**
  * @brief Removes an item from the circular buffer.
@@ -33,6 +39,6 @@ bool circular_buffer_push(circular_buffer_ctx *ctx, int data);
  *
  * @return true on success.
 */
-bool circular_buffer_pop(circular_buffer_ctx *ctx, int *data);
+bool circular_buffer_pop(circular_buffer_ctx *ctx, uint8_t *data);
 
 #endif /* _CIRCULAR_BUFFER_H */
