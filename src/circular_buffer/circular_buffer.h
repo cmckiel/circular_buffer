@@ -3,11 +3,13 @@
 
 #include <stdbool.h>
 #include <stdint.h>
+#include <stdlib.h>
 
 #define MAX_BUFFER_SIZE 1024
 
 typedef struct {
-    uint8_t data[MAX_BUFFER_SIZE];
+    size_t buff_size;
+    uint8_t buffer[MAX_BUFFER_SIZE];
     uint16_t head;
     uint16_t tail;
     uint32_t current_byte_count;
@@ -19,7 +21,7 @@ typedef struct {
  * @param ctx A blank handle for the buffer.
  * @return true if success, false if init failure.
 */
-bool circular_buffer_init(circular_buffer_ctx *ctx);
+bool circular_buffer_init(circular_buffer_ctx *ctx, size_t buff_size);
 
 /**
  * @brief Adds an item to the circular buffer.

@@ -7,8 +7,9 @@ extern "C" {
 
 TEST(CircularBufferTest, DoesInitialize)
 {
+    size_t buff_size = 256;
     circular_buffer_ctx ctx;
-    EXPECT_EQ(true, circular_buffer_init(&ctx));
+    EXPECT_EQ(true, circular_buffer_init(&ctx, buff_size));
 }
 
 TEST(CircularBufferTest, PopHandlesNULLCtx)
@@ -31,13 +32,39 @@ TEST(CircularBufferTest, PushHandlesNULLCtx)
 
 TEST(CircularBufferTest, InitHandlesNULLCtx)
 {
-    ASSERT_EQ(false, circular_buffer_init(NULL));
+    size_t buff_size = 256;
+    ASSERT_EQ(false, circular_buffer_init(NULL, buff_size));
+}
+
+TEST(CircularBufferTest, DoesNotAllowBuffSizeInitGreaterThanMax)
+{
+    size_t buff_size = MAX_BUFFER_SIZE + 1; // size greater than the max
+    circular_buffer_ctx ctx;
+
+    ASSERT_EQ(false, circular_buffer_init(&ctx, buff_size));
+}
+
+TEST(CircularBufferTest, DoesAllowBuffSizeInitLessThanMax)
+{
+    size_t buff_size = MAX_BUFFER_SIZE - 1; // size less than the max
+    circular_buffer_ctx ctx;
+
+    ASSERT_EQ(true, circular_buffer_init(&ctx, buff_size));
+}
+
+TEST(CircularBufferTest, DoesAllowBuffSizeInitEqualToMax)
+{
+    size_t buff_size = MAX_BUFFER_SIZE; // size equal to the max
+    circular_buffer_ctx ctx;
+
+    ASSERT_EQ(true, circular_buffer_init(&ctx, buff_size));
 }
 
 TEST(CircularBufferTest, DoesPushData)
 {
+    size_t buff_size = 256;
     circular_buffer_ctx ctx;
-    circular_buffer_init(&ctx);
+    circular_buffer_init(&ctx, buff_size);
 
     EXPECT_EQ(true, circular_buffer_push(&ctx, 4));
 }
@@ -45,8 +72,9 @@ TEST(CircularBufferTest, DoesPushData)
 TEST(CircularBufferTest, DoesPopData)
 {
     uint8_t data = 0;
+    size_t buff_size = 256;
     circular_buffer_ctx ctx;
-    circular_buffer_init(&ctx);
+    circular_buffer_init(&ctx, buff_size);
 
     // If buffer is empty (just initialized) pop should return false.
     EXPECT_EQ(false, circular_buffer_pop(&ctx, &data));
@@ -62,8 +90,9 @@ TEST(CircularBufferTest, DoesPopWhatItPushes)
 {
     uint8_t data_in = 36;
     uint8_t data_out = 0;
+    size_t buff_size = 256;
     circular_buffer_ctx ctx;
-    circular_buffer_init(&ctx);
+    circular_buffer_init(&ctx, buff_size);
 
     circular_buffer_push(&ctx, data_in);
 
@@ -78,9 +107,10 @@ TEST(CircularBufferTest, DoesPopWhatItPushes)
 TEST(CirularBufferTest, DoesPopWhatItPushesNTimes)
 {
     circular_buffer_ctx ctx;
+    size_t buff_size = MAX_BUFFER_SIZE;
     uint8_t data[MAX_BUFFER_SIZE] = { 0 };
 
-    circular_buffer_init(&ctx);
+    circular_buffer_init(&ctx, buff_size);
 
     for (int i = 0; i < MAX_BUFFER_SIZE; i++)
     {
@@ -103,11 +133,32 @@ TEST(CircularBufferTest, DoesNotAccessOutOfBoundsOnEmptyPop)
     uint8_t data_out = 0;
     // Only modifiy ctx to setup a test, never in production.
     circular_buffer_ctx ctx = {
-        .data = { 0 },
+        .buff_size = 256,
+        .buffer = { 0 },
         .head = 0,
         .tail = MAX_BUFFER_SIZE, // out of bounds index
         .current_byte_count = 0,
     };
 
     ASSERT_EQ(false, circular_buffer_pop(&ctx, &data_out));
+}
+
+TEST(CircularBufferTest, DoesNotAccessOutOfBoundsOnFullPush)
+{
+    uint8_t data_in = 0;
+    // Only modifiy ctx to setup a test, never in production.
+    circular_buffer_ctx ctx = {
+        .buff_size = 256,
+        .buffer = { 0 },
+        .head = MAX_BUFFER_SIZE, // out of bounds index
+        .tail = 0,
+        .current_byte_count = 0,
+    };
+
+    ASSERT_EQ(false, circular_buffer_push(&ctx, data_in));
+}
+
+TEST(CircularBufferTest, OverwritesOldestValueIfFullOnPush)
+{
+
 }
