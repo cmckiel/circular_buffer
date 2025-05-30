@@ -44,6 +44,14 @@ TEST(CircularBufferTest, DoesNotAllowBuffSizeInitGreaterThanMax)
     ASSERT_EQ(false, circular_buffer_init(&ctx, buff_size));
 }
 
+TEST(CircularBufferTest, DoesNotAllowBuffSizeOfZeroDuringInit)
+{
+    size_t buff_size = 0;
+    circular_buffer_ctx ctx;
+
+    ASSERT_EQ(false, circular_buffer_init(&ctx, buff_size));
+}
+
 TEST(CircularBufferTest, DoesAllowBuffSizeInitLessThanMax)
 {
     size_t buff_size = MAX_BUFFER_SIZE - 1; // size less than the max

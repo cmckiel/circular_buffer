@@ -5,6 +5,7 @@
 static bool ctx_is_valid(const circular_buffer_ctx *ctx) {
     return ctx &&
            ctx->buff_size <= MAX_BUFFER_SIZE &&
+           ctx->buff_size > 0 &&
            ctx->head < ctx->buff_size &&
            ctx->tail < ctx->buff_size &&
            ctx->current_byte_count <= ctx->buff_size;
@@ -14,7 +15,7 @@ bool circular_buffer_init(circular_buffer_ctx *ctx, size_t buff_size)
 {
     bool res = false;
 
-    if (ctx && buff_size <= MAX_BUFFER_SIZE)
+    if (ctx && 0 < buff_size && buff_size <= MAX_BUFFER_SIZE)
     {
         ctx->buff_size = buff_size;
         ctx->current_byte_count = 0;
