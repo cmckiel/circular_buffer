@@ -71,7 +71,6 @@ The implementation includes internal safety checks to validate buffer state on e
 - Invalid arguments are safely rejected.
 - Invalid buffer sizes (e.g. zero, too large) are rejected.
 - Internal consistency of the buffer context is continuously validated.
-- `peek()` requires non-null arguments.
 
 ---
 
