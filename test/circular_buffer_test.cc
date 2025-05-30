@@ -12,6 +12,12 @@ TEST(CircularBufferTest, DoesInitialize)
     EXPECT_EQ(true, circular_buffer_init(&ctx, buff_size));
 }
 
+TEST(CircularBufferTest, InitHandlesNULLCtx)
+{
+    size_t buff_size = 256;
+    ASSERT_EQ(false, circular_buffer_init(NULL, buff_size));
+}
+
 TEST(CircularBufferTest, PopHandlesNULLCtx)
 {
     uint8_t data = 0;
@@ -30,10 +36,21 @@ TEST(CircularBufferTest, PushHandlesNULLCtx)
     ASSERT_EQ(false, circular_buffer_push(NULL, data));
 }
 
-TEST(CircularBufferTest, InitHandlesNULLCtx)
+TEST(CircularBufferTest, PeekReturnsFalseForNULLCtx)
 {
-    size_t buff_size = 256;
-    ASSERT_EQ(false, circular_buffer_init(NULL, buff_size));
+    uint8_t data = 0;
+    ASSERT_EQ(false, circular_buffer_peek(NULL, &data));
+}
+
+TEST(CircularBufferTest, PeekReturnsFalseForNULLData)
+{
+    circular_buffer_ctx ctx;
+    ASSERT_EQ(false, circular_buffer_peek(&ctx, NULL));
+}
+
+TEST(CircularBufferTest, IsEmptyReturnsTrueForNULLCtx)
+{
+    ASSERT_EQ(true, circular_buffer_is_empty(NULL));
 }
 
 TEST(CircularBufferTest, DoesNotAllowBuffSizeInitGreaterThanMax)
@@ -328,18 +345,6 @@ TEST(CircularBufferTest, AllowsPeekingWithoutRemoval)
     }
 }
 
-TEST(CircularBufferTest, PeekReturnsFalseForNULLCtx)
-{
-    uint8_t data = 0;
-    ASSERT_EQ(false, circular_buffer_peek(NULL, &data));
-}
-
-TEST(CircularBufferTest, PeekReturnsFalseForNULLData)
-{
-    circular_buffer_ctx ctx;
-    ASSERT_EQ(false, circular_buffer_peek(&ctx, NULL));
-}
-
 TEST(CircularBufferTest, PeekReturnsFalseOnEmptyBuffer)
 {
     uint8_t data = 0;
@@ -348,4 +353,94 @@ TEST(CircularBufferTest, PeekReturnsFalseOnEmptyBuffer)
 
     ASSERT_EQ(true, circular_buffer_init(&ctx, buff_size));
     ASSERT_EQ(false, circular_buffer_peek(&ctx, &data));
+}
+
+TEST(CircularBufferTest, ReturnsFalseForNonEmptyBuffer)
+{
+    // Setup
+    uint8_t data = 24;
+    size_t buff_size = 16;
+    circular_buffer_ctx ctx;
+    ASSERT_EQ(true, circular_buffer_init(&ctx, buff_size));
+
+    // Non empty buffer.
+    ASSERT_EQ(true, circular_buffer_push(&ctx, data));
+
+    ASSERT_EQ(false, circular_buffer_is_empty(&ctx));
+}
+
+TEST(CircularBufferTest, ReturnsTrueForEmptyBuffer)
+{
+    // Setup
+    uint8_t data = 24;
+    size_t buff_size = 16;
+    circular_buffer_ctx ctx;
+    ASSERT_EQ(true, circular_buffer_init(&ctx, buff_size));
+
+    // No push and empty buffer.
+
+    ASSERT_EQ(true, circular_buffer_is_empty(&ctx));
+}
+
+// @todo find a more reasonable pattern in the data to test.
+TEST(CircularBufferTest, SupportsNormalUse)
+{
+    // Setup
+    uint8_t data = 24;
+    size_t buff_size = 256;
+    circular_buffer_ctx ctx;
+    ASSERT_EQ(true, circular_buffer_init(&ctx, buff_size));
+
+    // Write a bunch of values.
+    for (uint8_t i = 0; i < 200; i++)
+    {
+        ASSERT_EQ(true, circular_buffer_push(&ctx, i));
+    }
+
+    // Read some.
+    for (uint8_t i = 0; i < 65; i++)
+    {
+        uint8_t data_out = 0;
+        ASSERT_EQ(true, circular_buffer_pop(&ctx, &data_out));
+        ASSERT_EQ(i, data_out);
+    }
+
+    // Write a bunch more values.
+    for (uint8_t i = 0; i < 175; i++)
+    {
+        ASSERT_EQ(true, circular_buffer_push(&ctx, i));
+    }
+
+    // Check if it is empty and pop all the data.
+    ASSERT_EQ(false, circular_buffer_is_empty(&ctx));
+    if (!circular_buffer_is_empty(&ctx))
+    {
+        uint8_t data_out = 0;
+        size_t infinite_loop_protection = 0;
+        size_t expected_data_out = 119;  // This number is based on math from the above loops. Sorry.
+        while (circular_buffer_pop(&ctx, &data_out) && infinite_loop_protection <= MAX_BUFFER_SIZE)
+        {
+            // Check that we're getting the data we expect.
+            ASSERT_EQ(expected_data_out, data_out);
+
+            // This is a crazy way to test this, I admit.
+            expected_data_out++;
+            if (expected_data_out == 200)
+            {
+                expected_data_out = 0;
+            }
+
+            infinite_loop_protection++;
+            if (infinite_loop_protection >= MAX_BUFFER_SIZE)
+            {
+                // Infinite loop detected. This means pop() didn't return false as it should.
+                ASSERT_EQ(false, true);
+            }
+        }
+    }
+
+    // All the data should be out now.
+    ASSERT_EQ(true, circular_buffer_is_empty(&ctx));
+    // A second call should do say the same thing.
+    ASSERT_EQ(true, circular_buffer_is_empty(&ctx));
 }

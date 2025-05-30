@@ -54,4 +54,14 @@ bool circular_buffer_pop(circular_buffer_ctx *ctx, uint8_t *data);
  */
 bool circular_buffer_peek(circular_buffer_ctx *ctx, uint8_t *data);
 
+/**
+ * @brief Use to check if there is anything in the buffer.
+ *
+ * @param ctx A handle for the buffer.
+ *
+ * @return true if the buffer is empty or if the ctx is NULL, false if there
+ *          are items in the buffer.
+ */
+bool circular_buffer_is_empty(circular_buffer_ctx *ctx);
+
 #endif /* _CIRCULAR_BUFFER_H */

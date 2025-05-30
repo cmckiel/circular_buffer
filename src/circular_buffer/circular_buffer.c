@@ -77,3 +77,15 @@ bool circular_buffer_peek(circular_buffer_ctx *ctx, uint8_t *data)
 
     return res;
 }
+
+bool circular_buffer_is_empty(circular_buffer_ctx *ctx)
+{
+    bool res = true; // Consider a NULL ctx to be an empty buffer.
+
+    if (ctx_is_valid(ctx) && ctx->current_byte_count > 0)
+    {
+        res = false;
+    }
+
+    return res;
+}
