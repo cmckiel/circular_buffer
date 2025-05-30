@@ -339,3 +339,13 @@ TEST(CircularBufferTest, PeekReturnsFalseForNULLData)
     circular_buffer_ctx ctx;
     ASSERT_EQ(false, circular_buffer_peek(&ctx, NULL));
 }
+
+TEST(CircularBufferTest, PeekReturnsFalseOnEmptyBuffer)
+{
+    uint8_t data = 0;
+    size_t buff_size = 8;
+    circular_buffer_ctx ctx;
+
+    ASSERT_EQ(true, circular_buffer_init(&ctx, buff_size));
+    ASSERT_EQ(false, circular_buffer_peek(&ctx, &data));
+}

@@ -69,7 +69,7 @@ bool circular_buffer_peek(circular_buffer_ctx *ctx, uint8_t *data)
 {
     bool res = false;
 
-    if (data && ctx_is_valid(ctx))
+    if (data && ctx_is_valid(ctx) && ctx->current_byte_count > 0)
     {
         *data = ctx->buffer[ctx->tail];
         res = true;
