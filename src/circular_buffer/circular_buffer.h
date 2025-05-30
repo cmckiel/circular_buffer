@@ -44,4 +44,14 @@ bool circular_buffer_push(circular_buffer_ctx *ctx, uint8_t data);
 */
 bool circular_buffer_pop(circular_buffer_ctx *ctx, uint8_t *data);
 
+/**
+ * @brief Allows peeking at the next item without popping it.
+ *
+ * @param ctx A handle for the buffer.
+ * @param data A pointer to return peeked data.
+ *
+ * @return true on success.
+ */
+bool circular_buffer_peek(circular_buffer_ctx *ctx, uint8_t *data);
+
 #endif /* _CIRCULAR_BUFFER_H */

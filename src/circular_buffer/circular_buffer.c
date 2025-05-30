@@ -64,3 +64,16 @@ bool circular_buffer_pop(circular_buffer_ctx *ctx, uint8_t *data)
 
     return res;
 }
+
+bool circular_buffer_peek(circular_buffer_ctx *ctx, uint8_t *data)
+{
+    bool res = false;
+
+    if (data && ctx_is_valid(ctx))
+    {
+        *data = ctx->buffer[ctx->tail];
+        res = true;
+    }
+
+    return res;
+}

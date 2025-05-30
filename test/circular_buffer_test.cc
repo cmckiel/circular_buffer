@@ -301,3 +301,41 @@ TEST(CircularBufferTest, HeadWrapsAroundBeforeTail)
     uint8_t data_out = 0;
     ASSERT_EQ(false, circular_buffer_pop(&ctx, &data_out));
 }
+
+TEST(CircularBufferTest, AllowsPeekingWithoutRemoval)
+{
+    size_t buff_size = 8;
+    circular_buffer_ctx ctx;
+
+    ASSERT_EQ(true, circular_buffer_init(&ctx, buff_size));
+
+    for (uint8_t i = 0; i < 4; i++)
+    {
+        ASSERT_EQ(true, circular_buffer_push(&ctx, i + 1));
+    }
+
+    for (uint8_t i = 0; i < 4; i++)
+    {
+        // Peek without popping.
+        uint8_t data_out = 0;
+        ASSERT_EQ(true, circular_buffer_peek(&ctx, &data_out));
+        ASSERT_EQ(i + 1, data_out);
+
+        // Pop and make sure data is still there.
+        data_out = 0;
+        ASSERT_EQ(true, circular_buffer_pop(&ctx, &data_out));
+        ASSERT_EQ(i + 1, data_out);
+    }
+}
+
+TEST(CircularBufferTest, PeekReturnsFalseForNULLCtx)
+{
+    uint8_t data = 0;
+    ASSERT_EQ(false, circular_buffer_peek(NULL, &data));
+}
+
+TEST(CircularBufferTest, PeekReturnsFalseForNULLData)
+{
+    circular_buffer_ctx ctx;
+    ASSERT_EQ(false, circular_buffer_peek(&ctx, NULL));
+}
