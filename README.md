@@ -62,7 +62,7 @@ bool circular_buffer_is_empty(circular_buffer_ctx *ctx);
 - `circular_buffer_pop()` retrieves the oldest data from the buffer.
 - `circular_buffer_peek()` allows looking at the next data without removing it.
 - `circular_buffer_is_empty()` quickly informs if there is data in the buffer.
-- All functions return `true` on success, `false` on failure.
+- All functions return `true` on success, `false` on failure (except `is_empty()`).
 
 ---
 
