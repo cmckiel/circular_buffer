@@ -104,7 +104,7 @@ TEST(CircularBufferTest, DoesPopWhatItPushes)
 // @todo
 // subsequent pops don't yield same element
 
-TEST(CirularBufferTest, DoesPopWhatItPushesNTimes)
+TEST(CircularBufferTest, DoesPopWhatItPushesNTimes)
 {
     circular_buffer_ctx ctx;
     size_t buff_size = MAX_BUFFER_SIZE;
@@ -160,5 +160,136 @@ TEST(CircularBufferTest, DoesNotAccessOutOfBoundsOnFullPush)
 
 TEST(CircularBufferTest, OverwritesOldestValueIfFullOnPush)
 {
+    size_t buff_size = MAX_BUFFER_SIZE;
+    circular_buffer_ctx ctx;
 
+    circular_buffer_init(&ctx, buff_size);
+
+    // Fill buffer with 1's.
+    for (size_t i = 0; i < MAX_BUFFER_SIZE; i++)
+    {
+        circular_buffer_push(&ctx, 1);
+    }
+
+    // Write one more 2, which overwrites the first 1.
+    circular_buffer_push(&ctx, 2);
+
+    uint8_t data_out = 0;
+
+    // Pop all of the 1's. There should be (MAX_BUFFER_SIZE - 1) 1's, since
+    // the first was overwritten with a 2.
+    for (size_t i = 0; i < (MAX_BUFFER_SIZE - 1); i++)
+    {
+        data_out = 0;
+        circular_buffer_pop(&ctx, &data_out);
+
+        ASSERT_EQ(1, data_out);
+    }
+
+    // All of the 1's should be gone, next pop should be the most recently pushed 2.
+    data_out = 0;
+    circular_buffer_pop(&ctx, &data_out);
+
+    ASSERT_EQ(2, data_out);
+}
+
+TEST(CircularBufferTest, PreventsPoppingEmptyBuffer)
+{
+    uint8_t data_out = 0;
+    size_t buff_size = MAX_BUFFER_SIZE;
+    circular_buffer_ctx ctx;
+
+    circular_buffer_init(&ctx, buff_size);
+
+    circular_buffer_push(&ctx, 1);
+
+    // First call should be okay, since there is one element in the buffer.
+    ASSERT_EQ(true, circular_buffer_pop(&ctx, &data_out));
+
+    // Second call should NOT be okay, since the last item was removed.
+    ASSERT_EQ(false, circular_buffer_pop(&ctx, &data_out));
+}
+
+TEST(CircularBufferTest, OnlyAllowsUpToBuffSizeBytesToBeWritten)
+{
+    size_t buff_size = 256;
+    circular_buffer_ctx ctx;
+
+    circular_buffer_init(&ctx, buff_size);
+
+    // Fill buffer with 1's.
+    for (size_t i = 0; i < buff_size; i++)
+    {
+        circular_buffer_push(&ctx, 1);
+    }
+
+    // Write one more 2, which should overwrites the first 1.
+    circular_buffer_push(&ctx, 2);
+
+    uint8_t data_out = 0;
+
+    // Pop all of the 1's. There should be (buff_size - 1) 1's, since
+    // the first was overwritten with a 2.
+    for (size_t i = 0; i < (buff_size - 1); i++)
+    {
+        data_out = 0;
+        circular_buffer_pop(&ctx, &data_out);
+
+        ASSERT_EQ(1, data_out);
+    }
+
+    // All of the 1's should be gone, next pop should be the most recently pushed 2.
+    data_out = 0;
+    circular_buffer_pop(&ctx, &data_out);
+
+    ASSERT_EQ(2, data_out);
+}
+
+TEST(CircularBufferTest, HeadWrapsAroundBeforeTail)
+{
+    size_t buff_size = 8;
+    circular_buffer_ctx ctx;
+
+    circular_buffer_init(&ctx, buff_size);
+
+    // Push a couple times.
+    for (size_t i = 0; i < 5; i++)
+    {
+        uint8_t data_in = 253; // random data
+        ASSERT_EQ(true, circular_buffer_push(&ctx, data_in));
+    }
+
+    // Pop a couple times less.
+    for (size_t i = 0; i < 3; i++)
+    {
+        uint8_t data_out = 0;
+        ASSERT_EQ(true, circular_buffer_pop(&ctx, &data_out));
+        ASSERT_EQ(253, data_out);
+    }
+
+    // These pushes will wrap around.
+    for (size_t i = 0; i < 5; i++)
+    {
+        uint8_t data_in = 112; // random data
+        ASSERT_EQ(true, circular_buffer_push(&ctx, data_in));
+    }
+
+    // Buffer should look like this:
+    // [112, 112, empty, 253, 253, 112, 112, 112]
+    //        ^           ^
+    //        head        tail
+
+    const size_t EXPECTED_DATA_SIZE = 7;
+    uint8_t expected_data[EXPECTED_DATA_SIZE] = { 253, 253, 112, 112, 112, 112, 112 };
+
+    for (size_t i = 0; i < EXPECTED_DATA_SIZE; i++)
+    {
+        uint8_t data_out = 0;
+        ASSERT_EQ(true, circular_buffer_pop(&ctx, &data_out));
+        ASSERT_EQ(expected_data[i], data_out);
+    }
+
+    // Next pop should be empty.
+    uint8_t data_out = 0;
+    ASSERT_EQ(false, circular_buffer_pop(&ctx, &data_out));
 }
