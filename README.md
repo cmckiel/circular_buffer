@@ -54,12 +54,14 @@ bool circular_buffer_init(circular_buffer_ctx *ctx, size_t buff_size);
 bool circular_buffer_push(circular_buffer_ctx *ctx, uint8_t data);
 bool circular_buffer_pop(circular_buffer_ctx *ctx, uint8_t *data);
 bool circular_buffer_peek(circular_buffer_ctx *ctx, uint8_t *data);
+bool circular_buffer_is_empty(circular_buffer_ctx *ctx);
 ```
 
 - `circular_buffer_init()` initializes a buffer instance.
 - `circular_buffer_push()` inserts data into the buffer.
 - `circular_buffer_pop()` retrieves the oldest data from the buffer.
 - `circular_buffer_peek()` allows looking at the next data without removing it.
+- `circular_buffer_is_empty()` quickly informs if there is data in the buffer.
 - All functions return `true` on success, `false` on failure.
 
 ---
