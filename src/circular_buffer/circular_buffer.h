@@ -19,6 +19,7 @@ typedef struct {
  * @brief Initializes an instance of circular buffer.
  *
  * @param ctx A blank handle for the buffer.
+ * @param buff_size The size of the buffer to instantiate. Must be less than or equal to MAX_BUFFER_SIZE.
  * @return true if success, false if init failure.
 */
 bool circular_buffer_init(circular_buffer_ctx *ctx, size_t buff_size);
