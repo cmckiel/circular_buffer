@@ -31,14 +31,17 @@ Designed for embedded systems or performance-critical applications where heap al
 ### Types
 
 ```c
-#define MAX_BUFFER_SIZE 1024
+#ifndef CIRCULAR_BUFFER_MAX_SIZE
+#define CIRCULAR_BUFFER_MAX_SIZE 1024
+#endif
 
 typedef struct {
     size_t buff_size;
-    uint8_t buffer[MAX_BUFFER_SIZE];
-    uint16_t head;
-    uint16_t tail;
-    uint32_t current_byte_count;
+    uint8_t buffer[CIRCULAR_BUFFER_MAX_SIZE];
+    size_t head;
+    size_t tail;
+    size_t current_byte_count;
+    uint32_t overflow_count;
 } circular_buffer_ctx;
 ```
 
@@ -129,7 +132,7 @@ You can build and integrate this library into any C99-compliant project.
 
 A dev container was added for convenience. For example, when developing on Apple silicon valgrind is not available natively. The container solves that.
 If you install the dev container extension on vscode and have docker installed, you can use the container. Otherwise, you'll have to set up your own dev environment
-to inlcude cmake, gcc, gtest, valgrind, etc.
+to include cmake, gcc, gtest, valgrind, etc.
 
 ---
 
