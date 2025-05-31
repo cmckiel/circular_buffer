@@ -67,4 +67,23 @@ bool circular_buffer_peek(circular_buffer_ctx *ctx, uint8_t *data);
  */
 bool circular_buffer_is_empty(circular_buffer_ctx *ctx);
 
+/**
+ * @brief Retrieve the number of bytes that have been overwritten due to overflow.
+ *
+ * @param ctx A handle for the buffer.
+ * @param overflow_count A pointer to a place where the retrieved overflow count should be stored.
+ *
+ * @return true if the data was successfully retrieved. false otherwise.
+ */
+bool circular_buffer_get_overflow_count(circular_buffer_ctx *ctx, uint32_t *overflow_count);
+
+/**
+ * @brief Reset the overflow count for this buffer.
+ *
+ * @param ctx A handle for the buffer.
+ *
+ * @return true if the reset was successful. false otherwise.
+ */
+bool circular_buffer_clear_overflow_count(circular_buffer_ctx *ctx);
+
 #endif /* _CIRCULAR_BUFFER_H */

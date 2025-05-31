@@ -53,6 +53,18 @@ TEST(CircularBufferTest, IsEmptyReturnsTrueForNULLCtx)
     ASSERT_EQ(true, circular_buffer_is_empty(NULL));
 }
 
+TEST(CircularBufferTest, GetOverflowCountReturnsFalseForNULLCtx)
+{
+    uint32_t overflow_count = 0;
+    ASSERT_EQ(false, circular_buffer_get_overflow_count(NULL, &overflow_count));
+}
+
+TEST(CircularBufferTest, GetOverflowCountReturnsFalseForNULLOverflowCount)
+{
+    circular_buffer_ctx ctx;
+    ASSERT_EQ(false, circular_buffer_get_overflow_count(&ctx, NULL));
+}
+
 TEST(CircularBufferTest, DoesNotAllowBuffSizeInitGreaterThanMax)
 {
     size_t buff_size = CIRCULAR_BUFFER_MAX_SIZE + 1; // size greater than the max
@@ -443,4 +455,58 @@ TEST(CircularBufferTest, SupportsNormalUse)
     ASSERT_EQ(true, circular_buffer_is_empty(&ctx));
     // A second call should do say the same thing.
     ASSERT_EQ(true, circular_buffer_is_empty(&ctx));
+}
+
+TEST(CircularBufferTest, GetOverflowCountRetrievesCorrectCount)
+{
+    // Setup
+    size_t buff_size = 16;
+    circular_buffer_ctx ctx;
+    ASSERT_EQ(true, circular_buffer_init(&ctx, buff_size));
+
+    // Write 20 values, should overflow by 4.
+    for (uint8_t i = 0; i < 20; i++)
+    {
+        ASSERT_EQ(true, circular_buffer_push(&ctx, i));
+    }
+
+    // Get the overflow.
+    uint32_t overflow_count = 0;
+    ASSERT_EQ(true, circular_buffer_get_overflow_count(&ctx, &overflow_count));
+    ASSERT_EQ(4, overflow_count);
+
+    // Write 8 more values, should overflow by a total of 12 now.
+    for (uint8_t i = 0; i < 8; i++)
+    {
+        ASSERT_EQ(true, circular_buffer_push(&ctx, i));
+    }
+
+    ASSERT_EQ(true, circular_buffer_get_overflow_count(&ctx, &overflow_count));
+    ASSERT_EQ(12, overflow_count);
+}
+
+TEST(CircularBufferTest, CanClearOverflowCount)
+{
+    // Setup
+    size_t buff_size = 32;
+    circular_buffer_ctx ctx;
+    ASSERT_EQ(true, circular_buffer_init(&ctx, buff_size));
+
+    // Write 47 values, should overflow by 15.
+    for (uint8_t i = 0; i < 47; i++)
+    {
+        ASSERT_EQ(true, circular_buffer_push(&ctx, i));
+    }
+
+    // Get the overflow.
+    uint32_t overflow_count = 0;
+    ASSERT_EQ(true, circular_buffer_get_overflow_count(&ctx, &overflow_count));
+    ASSERT_EQ(15, overflow_count);
+
+    // Rest the overflow counter.
+    ASSERT_EQ(true, circular_buffer_clear_overflow_count(&ctx));
+
+    // Verify reset.
+    ASSERT_EQ(true, circular_buffer_get_overflow_count(&ctx, &overflow_count));
+    ASSERT_EQ(0, overflow_count);
 }

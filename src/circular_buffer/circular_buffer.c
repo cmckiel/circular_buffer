@@ -18,9 +18,10 @@ bool circular_buffer_init(circular_buffer_ctx *ctx, size_t buff_size)
     if (ctx && 0 < buff_size && buff_size <= CIRCULAR_BUFFER_MAX_SIZE)
     {
         ctx->buff_size = buff_size;
-        ctx->current_byte_count = 0;
         ctx->head = 0;
         ctx->tail = 0;
+        ctx->current_byte_count = 0;
+        ctx->overflow_count = 0;
         res = true;
     }
 
@@ -38,6 +39,7 @@ bool circular_buffer_push(circular_buffer_ctx *ctx, uint8_t data)
         {
             ctx->tail = (ctx->tail + 1) % ctx->buff_size;
             ctx->current_byte_count--;
+            ctx->overflow_count++;
         }
 
         ctx->buffer[ctx->head] = data;
@@ -85,6 +87,32 @@ bool circular_buffer_is_empty(circular_buffer_ctx *ctx)
     if (ctx_is_valid(ctx) && ctx->current_byte_count > 0)
     {
         res = false;
+    }
+
+    return res;
+}
+
+bool circular_buffer_get_overflow_count(circular_buffer_ctx *ctx, uint32_t *overflow_count)
+{
+    bool res = false;
+
+    if (overflow_count && ctx_is_valid(ctx))
+    {
+        *overflow_count = ctx->overflow_count;
+        res = true;
+    }
+
+    return res;
+}
+
+bool circular_buffer_clear_overflow_count(circular_buffer_ctx *ctx)
+{
+    bool res = false;
+
+    if (ctx_is_valid(ctx))
+    {
+        ctx->overflow_count = 0;
+        res = true;
     }
 
     return res;
