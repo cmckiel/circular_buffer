@@ -5,14 +5,17 @@
 #include <stdint.h>
 #include <stdlib.h>
 
-#define MAX_BUFFER_SIZE 1024
+#ifndef CIRCULAR_BUFFER_MAX_SIZE
+#define CIRCULAR_BUFFER_MAX_SIZE 1024
+#endif
 
 typedef struct {
-    size_t buff_size;
-    uint8_t buffer[MAX_BUFFER_SIZE];
-    uint16_t head;
-    uint16_t tail;
-    uint32_t current_byte_count;
+    size_t buff_size;          // User can set up to MAX_SIZE
+    uint8_t buffer[CIRCULAR_BUFFER_MAX_SIZE];
+    size_t head;               // Handles any reasonable buffer size
+    size_t tail;
+    size_t current_byte_count;
+    uint32_t overflow_count;   // Accumulates over time
 } circular_buffer_ctx;
 
 /**

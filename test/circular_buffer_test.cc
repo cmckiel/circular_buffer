@@ -55,7 +55,7 @@ TEST(CircularBufferTest, IsEmptyReturnsTrueForNULLCtx)
 
 TEST(CircularBufferTest, DoesNotAllowBuffSizeInitGreaterThanMax)
 {
-    size_t buff_size = MAX_BUFFER_SIZE + 1; // size greater than the max
+    size_t buff_size = CIRCULAR_BUFFER_MAX_SIZE + 1; // size greater than the max
     circular_buffer_ctx ctx;
 
     ASSERT_EQ(false, circular_buffer_init(&ctx, buff_size));
@@ -71,7 +71,7 @@ TEST(CircularBufferTest, DoesNotAllowBuffSizeOfZeroDuringInit)
 
 TEST(CircularBufferTest, DoesAllowBuffSizeInitLessThanMax)
 {
-    size_t buff_size = MAX_BUFFER_SIZE - 1; // size less than the max
+    size_t buff_size = CIRCULAR_BUFFER_MAX_SIZE - 1; // size less than the max
     circular_buffer_ctx ctx;
 
     ASSERT_EQ(true, circular_buffer_init(&ctx, buff_size));
@@ -79,7 +79,7 @@ TEST(CircularBufferTest, DoesAllowBuffSizeInitLessThanMax)
 
 TEST(CircularBufferTest, DoesAllowBuffSizeInitEqualToMax)
 {
-    size_t buff_size = MAX_BUFFER_SIZE; // size equal to the max
+    size_t buff_size = CIRCULAR_BUFFER_MAX_SIZE; // size equal to the max
     circular_buffer_ctx ctx;
 
     ASSERT_EQ(true, circular_buffer_init(&ctx, buff_size));
@@ -132,12 +132,12 @@ TEST(CircularBufferTest, DoesPopWhatItPushes)
 TEST(CircularBufferTest, DoesPopWhatItPushesNTimes)
 {
     circular_buffer_ctx ctx;
-    size_t buff_size = MAX_BUFFER_SIZE;
-    uint8_t data[MAX_BUFFER_SIZE] = { 0 };
+    size_t buff_size = CIRCULAR_BUFFER_MAX_SIZE;
+    uint8_t data[CIRCULAR_BUFFER_MAX_SIZE] = { 0 };
 
     circular_buffer_init(&ctx, buff_size);
 
-    for (int i = 0; i < MAX_BUFFER_SIZE; i++)
+    for (int i = 0; i < CIRCULAR_BUFFER_MAX_SIZE; i++)
     {
         uint8_t data_in = i % 256;
         circular_buffer_push(&ctx, data_in);
@@ -145,7 +145,7 @@ TEST(CircularBufferTest, DoesPopWhatItPushesNTimes)
     }
 
     // FIFO
-    for (int i = 0; i < MAX_BUFFER_SIZE; i++)
+    for (int i = 0; i < CIRCULAR_BUFFER_MAX_SIZE; i++)
     {
         uint8_t data_out = 0;
         circular_buffer_pop(&ctx, &data_out);
@@ -161,7 +161,7 @@ TEST(CircularBufferTest, DoesNotAccessOutOfBoundsOnEmptyPop)
         .buff_size = 256,
         .buffer = { 0 },
         .head = 0,
-        .tail = MAX_BUFFER_SIZE, // out of bounds index
+        .tail = CIRCULAR_BUFFER_MAX_SIZE, // out of bounds index
         .current_byte_count = 0,
     };
 
@@ -175,7 +175,7 @@ TEST(CircularBufferTest, DoesNotAccessOutOfBoundsOnFullPush)
     circular_buffer_ctx ctx = {
         .buff_size = 256,
         .buffer = { 0 },
-        .head = MAX_BUFFER_SIZE, // out of bounds index
+        .head = CIRCULAR_BUFFER_MAX_SIZE, // out of bounds index
         .tail = 0,
         .current_byte_count = 0,
     };
@@ -185,13 +185,13 @@ TEST(CircularBufferTest, DoesNotAccessOutOfBoundsOnFullPush)
 
 TEST(CircularBufferTest, OverwritesOldestValueIfFullOnPush)
 {
-    size_t buff_size = MAX_BUFFER_SIZE;
+    size_t buff_size = CIRCULAR_BUFFER_MAX_SIZE;
     circular_buffer_ctx ctx;
 
     circular_buffer_init(&ctx, buff_size);
 
     // Fill buffer with 1's.
-    for (size_t i = 0; i < MAX_BUFFER_SIZE; i++)
+    for (size_t i = 0; i < CIRCULAR_BUFFER_MAX_SIZE; i++)
     {
         circular_buffer_push(&ctx, 1);
     }
@@ -201,9 +201,9 @@ TEST(CircularBufferTest, OverwritesOldestValueIfFullOnPush)
 
     uint8_t data_out = 0;
 
-    // Pop all of the 1's. There should be (MAX_BUFFER_SIZE - 1) 1's, since
+    // Pop all of the 1's. There should be (CIRCULAR_BUFFER_MAX_SIZE - 1) 1's, since
     // the first was overwritten with a 2.
-    for (size_t i = 0; i < (MAX_BUFFER_SIZE - 1); i++)
+    for (size_t i = 0; i < (CIRCULAR_BUFFER_MAX_SIZE - 1); i++)
     {
         data_out = 0;
         circular_buffer_pop(&ctx, &data_out);
@@ -221,7 +221,7 @@ TEST(CircularBufferTest, OverwritesOldestValueIfFullOnPush)
 TEST(CircularBufferTest, PreventsPoppingEmptyBuffer)
 {
     uint8_t data_out = 0;
-    size_t buff_size = MAX_BUFFER_SIZE;
+    size_t buff_size = CIRCULAR_BUFFER_MAX_SIZE;
     circular_buffer_ctx ctx;
 
     circular_buffer_init(&ctx, buff_size);
@@ -418,7 +418,7 @@ TEST(CircularBufferTest, SupportsNormalUse)
         uint8_t data_out = 0;
         size_t infinite_loop_protection = 0;
         size_t expected_data_out = 119;  // This number is based on math from the above loops. Sorry.
-        while (circular_buffer_pop(&ctx, &data_out) && infinite_loop_protection <= MAX_BUFFER_SIZE)
+        while (circular_buffer_pop(&ctx, &data_out) && infinite_loop_protection <= CIRCULAR_BUFFER_MAX_SIZE)
         {
             // Check that we're getting the data we expect.
             ASSERT_EQ(expected_data_out, data_out);
@@ -431,7 +431,7 @@ TEST(CircularBufferTest, SupportsNormalUse)
             }
 
             infinite_loop_protection++;
-            if (infinite_loop_protection >= MAX_BUFFER_SIZE)
+            if (infinite_loop_protection >= CIRCULAR_BUFFER_MAX_SIZE)
             {
                 // Infinite loop detected. This means pop() didn't return false as it should.
                 ASSERT_EQ(false, true);
