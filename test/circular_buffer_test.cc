@@ -287,46 +287,59 @@ TEST_F(CircularBufferTest, OverwritesOldestValueIfFullOnPush)
 
 TEST_F(CircularBufferTest, HeadWrapsAroundBeforeTail)
 {
-    // Push a couple times.
-    for (size_t i = 0; i < 5; i++)
+    // Memory to store everything that went in and out of the buffer for verification.
+    size_t current_data_in_loc = 0;
+    size_t current_data_out_loc = 0;
+    uint8_t data_in[buff_size * 2] = { 0 };
+    uint8_t data_out[buff_size * 2] = { 0 };
+
+    // Size divisions based off of buff_size.
+    size_t healthy_amount_of_data = (3 * buff_size) / 4;     // 75-ish% of buff_size
+    size_t appreciable_amount_of_data = (1 * buff_size) / 3; // 33-ish% of buff_size
+    size_t sizeable_amount_of_data = (1 * buff_size) / 4;    // 25-ish% of buff_size
+
+    // Add a healthy amount of initial data to the buffer,
+    // but don't fill it.
+    for (size_t i = 0; i < healthy_amount_of_data && i < buff_size; i++)
     {
-        uint8_t data_in = 253; // random data
-        ASSERT_EQ(true, circular_buffer_push(&ctx, data_in));
+        data_in[current_data_in_loc] = 253; // random data
+        ASSERT_TRUE(circular_buffer_push(&ctx, data_in[current_data_in_loc]));
+        current_data_in_loc++;
     }
 
-    // Pop a couple times less.
-    for (size_t i = 0; i < 3; i++)
+    // Pop off a sizeable amount of data.
+    for (size_t i = 0; i < sizeable_amount_of_data && i < buff_size; i++)
     {
-        uint8_t data_out = 0;
-        ASSERT_EQ(true, circular_buffer_pop(&ctx, &data_out));
-        ASSERT_EQ(253, data_out);
+        ASSERT_TRUE(circular_buffer_pop(&ctx, &data_out[current_data_out_loc]));
+        current_data_out_loc++;
     }
 
-    // These pushes will wrap around.
-    for (size_t i = 0; i < 5; i++)
+    // Adding an appreciable amount of data will cause head to wrap around.
+    for (size_t i = 0; i < appreciable_amount_of_data && i < buff_size; i++)
     {
-        uint8_t data_in = 112; // random data
-        ASSERT_EQ(true, circular_buffer_push(&ctx, data_in));
+        data_in[current_data_in_loc] = 112; // random data
+        ASSERT_TRUE(circular_buffer_push(&ctx, data_in[current_data_in_loc]));
+        current_data_in_loc++;
     }
 
-    // Buffer should look like this:
+    // Buffer should look something like this:
     // [112, 112, empty, 253, 253, 112, 112, 112]
     //        ^           ^
     //        head        tail
 
-    const size_t EXPECTED_DATA_SIZE = 7;
-    uint8_t expected_data[EXPECTED_DATA_SIZE] = { 253, 253, 112, 112, 112, 112, 112 };
-
-    for (size_t i = 0; i < EXPECTED_DATA_SIZE; i++)
+    // Pop the rest of everything out of the buffer.
+    size_t i = 0;
+    while (circular_buffer_pop(&ctx, &data_out[current_data_out_loc]) && i < buff_size)
     {
-        uint8_t data_out = 0;
-        ASSERT_EQ(true, circular_buffer_pop(&ctx, &data_out));
-        ASSERT_EQ(expected_data[i], data_out);
+        current_data_out_loc++;
+        i++;
     }
 
-    // Next pop should be empty.
-    uint8_t data_out = 0;
-    ASSERT_EQ(false, circular_buffer_pop(&ctx, &data_out));
+    // Verify everything that was put in was taken out in the correct order.
+    for (size_t i = 0; i < sizeof(data_in) && i < sizeof(data_out); i++)
+    {
+        EXPECT_EQ(data_in[i], data_out[i]);
+    }
 }
 
 // @todo find a more reasonable pattern in the data to test.
