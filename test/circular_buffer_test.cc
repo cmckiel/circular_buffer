@@ -1,19 +1,36 @@
 #include <gtest/gtest.h>
 #include <stdbool.h>
+#include <time.h>
 
 extern "C" {
 #include "circular_buffer.h"
 }
 
+// Helper for random test data.
+uint8_t random_uint8() {
+    return (uint8_t)(rand() % 256);
+}
+
 class CircularBufferTest : public ::testing::Test {
+private:
+    static bool seed_is_set;
+    int best_seed_ever = 42;
 protected:
-    circular_buffer_ctx ctx;
     size_t buff_size = 256;
+    circular_buffer_ctx ctx;
 
     void SetUp() override {
         ASSERT_TRUE(circular_buffer_init(&ctx, buff_size));
+
+        // Set up the seed only once per full testing run.
+        if (!seed_is_set) {
+            srand(best_seed_ever);
+            seed_is_set = true;
+        }
     }
 };
+
+bool CircularBufferTest::seed_is_set = false;
 
 /****************** SECTION: Initialization ************************/
 
@@ -300,109 +317,151 @@ TEST_F(CircularBufferTest, HeadWrapsAroundBeforeTail)
 
     // Add a healthy amount of initial data to the buffer,
     // but don't fill it.
-    for (size_t i = 0; i < healthy_amount_of_data && i < buff_size; i++)
+    for (size_t i = 0; i < healthy_amount_of_data && current_data_in_loc < sizeof(data_in); i++)
     {
-        data_in[current_data_in_loc] = 253; // random data
+        data_in[current_data_in_loc] = random_uint8();
         ASSERT_TRUE(circular_buffer_push(&ctx, data_in[current_data_in_loc]));
         current_data_in_loc++;
     }
 
     // Pop off a sizeable amount of data.
-    for (size_t i = 0; i < sizeable_amount_of_data && i < buff_size; i++)
+    for (size_t i = 0; i < sizeable_amount_of_data &&
+        i < buff_size && current_data_out_loc < sizeof(data_out); i++)
     {
         ASSERT_TRUE(circular_buffer_pop(&ctx, &data_out[current_data_out_loc]));
         current_data_out_loc++;
     }
 
-    // Adding an appreciable amount of data will cause head to wrap around.
-    for (size_t i = 0; i < appreciable_amount_of_data && i < buff_size; i++)
+    // Adding an appreciable amount of data will cause head to wrap around but without
+    // overwritting any data.
+    for (size_t i = 0; i < appreciable_amount_of_data && current_data_in_loc < sizeof(data_in); i++)
     {
-        data_in[current_data_in_loc] = 112; // random data
+        data_in[current_data_in_loc] = random_uint8();
         ASSERT_TRUE(circular_buffer_push(&ctx, data_in[current_data_in_loc]));
         current_data_in_loc++;
     }
 
     // Buffer should look something like this:
-    // [112, 112, empty, 253, 253, 112, 112, 112]
+    // [117, 182, empty, 251, 203, 14, 132, 1]
     //        ^           ^
     //        head        tail
 
     // Pop the rest of everything out of the buffer.
     size_t i = 0;
-    while (circular_buffer_pop(&ctx, &data_out[current_data_out_loc]) && i < buff_size)
+    while (current_data_out_loc < sizeof(data_out) &&
+           circular_buffer_pop(&ctx, &data_out[current_data_out_loc]) &&
+           i < buff_size)
     {
         current_data_out_loc++;
         i++;
     }
+    // All the data should be out now.
+    ASSERT_TRUE(circular_buffer_is_empty(&ctx));
 
     // Verify everything that was put in was taken out in the correct order.
+    // Only works if no data was overwritten and lost.
     for (size_t i = 0; i < sizeof(data_in) && i < sizeof(data_out); i++)
     {
         EXPECT_EQ(data_in[i], data_out[i]);
     }
 }
 
-// @todo find a more reasonable pattern in the data to test.
-TEST(CircularBufferTest, SupportsNormalUse)
+TEST_F(CircularBufferTest, StressTest)
 {
-    // Setup
-    uint8_t data = 24;
-    size_t buff_size = 256;
-    circular_buffer_ctx ctx;
-    ASSERT_EQ(true, circular_buffer_init(&ctx, buff_size));
+    // For keeping track of total in, total out.
+    uint8_t data_in = 0, data_out = 0;
+    size_t total_data_in_count = 0;
+    size_t total_data_out_count = 0;
 
-    // Write a bunch of values.
-    for (uint8_t i = 0; i < 200; i++)
+    // The number of overflows will be compared to the difference of (in_count - out_count).
+    uint32_t overflow_count = 0;
+
+    // Size divisions based off of buff_size.
+    size_t healthy_amount_of_data = (3 * buff_size) / 4;     // 75-ish% of buff_size
+    size_t appreciable_amount_of_data = (1 * buff_size) / 3; // 33-ish% of buff_size
+    size_t sizeable_amount_of_data = (1 * buff_size) / 4;    // 25-ish% of buff_size
+    size_t mega_amount_of_data = (132 * buff_size);          // 13,100% of buff_size
+
+    // Add six healthy servings of initial data to the buffer,
+    for (size_t i = 0; i < (6 * healthy_amount_of_data); i++)
     {
-        ASSERT_EQ(true, circular_buffer_push(&ctx, i));
+        data_in = random_uint8();
+        ASSERT_TRUE(circular_buffer_push(&ctx, data_in));
+        total_data_in_count++;
     }
 
-    // Read some.
-    for (uint8_t i = 0; i < 65; i++)
+    // Pop off two sizeable amounts of data.
+    for (size_t i = 0; i < (2 * sizeable_amount_of_data) && i < buff_size; i++)
     {
-        uint8_t data_out = 0;
-        ASSERT_EQ(true, circular_buffer_pop(&ctx, &data_out));
-        ASSERT_EQ(i, data_out);
+        ASSERT_TRUE(circular_buffer_pop(&ctx, &data_out));
+        total_data_out_count++;
     }
 
-    // Write a bunch more values.
-    for (uint8_t i = 0; i < 175; i++)
+    // Add an appreciable amount of data.
+    for (size_t i = 0; i < appreciable_amount_of_data; i++)
     {
-        ASSERT_EQ(true, circular_buffer_push(&ctx, i));
+        data_in = random_uint8();
+        ASSERT_TRUE(circular_buffer_push(&ctx, data_in));
+        total_data_in_count++;
     }
 
-    // Check if it is empty and pop all the data.
-    ASSERT_EQ(false, circular_buffer_is_empty(&ctx));
-    if (!circular_buffer_is_empty(&ctx))
+    // Pop the rest of everything out of the buffer.
+    size_t i = 0;
+    while (circular_buffer_pop(&ctx, &data_out) && i < buff_size)
     {
-        uint8_t data_out = 0;
-        size_t infinite_loop_protection = 0;
-        size_t expected_data_out = 119;  // This number is based on math from the above loops. Sorry.
-        while (circular_buffer_pop(&ctx, &data_out) && infinite_loop_protection <= CIRCULAR_BUFFER_MAX_SIZE)
-        {
-            // Check that we're getting the data we expect.
-            ASSERT_EQ(expected_data_out, data_out);
-
-            // This is a crazy way to test this, I admit.
-            expected_data_out++;
-            if (expected_data_out == 200)
-            {
-                expected_data_out = 0;
-            }
-
-            infinite_loop_protection++;
-            if (infinite_loop_protection >= CIRCULAR_BUFFER_MAX_SIZE)
-            {
-                // Infinite loop detected. This means pop() didn't return false as it should.
-                ASSERT_EQ(false, true);
-            }
-        }
+        total_data_out_count++;
+        i++;
     }
-
     // All the data should be out now.
-    ASSERT_EQ(true, circular_buffer_is_empty(&ctx));
-    // A second call should do say the same thing.
-    ASSERT_EQ(true, circular_buffer_is_empty(&ctx));
+    ASSERT_TRUE(circular_buffer_is_empty(&ctx));
+
+    // Add an appreciable amount of data.
+    for (size_t i = 0; i < appreciable_amount_of_data; i++)
+    {
+        data_in = random_uint8();
+        ASSERT_TRUE(circular_buffer_push(&ctx, data_in));
+        total_data_in_count++;
+    }
+
+    // Add a mega amount of data.
+    for (size_t i = 0; i < mega_amount_of_data; i++)
+    {
+        data_in = random_uint8();
+        ASSERT_TRUE(circular_buffer_push(&ctx, data_in));
+        total_data_in_count++;
+    }
+
+    // Pop the rest of everything out of the buffer.
+    i = 0;
+    while (circular_buffer_pop(&ctx, &data_out) && i < buff_size)
+    {
+        total_data_out_count++;
+        i++;
+    }
+    // All the data should be out now.
+    ASSERT_TRUE(circular_buffer_is_empty(&ctx));
+
+    // Retrieve the bytes lost and compare it to the difference of in vs out counts.
+    ASSERT_TRUE(circular_buffer_get_overflow_count(&ctx, &overflow_count));
+    ASSERT_EQ(overflow_count, (total_data_in_count - total_data_out_count));
+}
+
+TEST_F(CircularBufferTest, IsEmptyConsistency)
+{
+    // Push a piece of data into buffer.
+    uint8_t data_in = 90, data_out = 0; // Random data
+    ASSERT_TRUE(circular_buffer_push(&ctx, data_in));
+
+    // Two repeating calls should yield same result.
+    ASSERT_FALSE(circular_buffer_is_empty(&ctx));
+    ASSERT_FALSE(circular_buffer_is_empty(&ctx));
+
+    // Remove the data.
+    ASSERT_TRUE(circular_buffer_pop(&ctx, &data_out));
+
+    // Two repeating calls should yield same result.
+    ASSERT_TRUE(circular_buffer_is_empty(&ctx));
+    ASSERT_TRUE(circular_buffer_is_empty(&ctx));
 }
 
 /****************** SECTION: Fault Handling and Edge Cases ************************/
@@ -463,28 +522,3 @@ TEST_F(CircularBufferTest, PeekProtectsAgainstCorruptCtx)
     corrupt_ctx.tail = CIRCULAR_BUFFER_MAX_SIZE; // out of bounds index
     ASSERT_FALSE(circular_buffer_peek(&corrupt_ctx, &data_out));
 }
-
-// @todo Rework this test to use it's current buff size.
-// TEST_F(CircularBufferTest, PushPopDataNTimes)
-// {
-//     circular_buffer_ctx ctx;
-//     size_t buff_size = CIRCULAR_BUFFER_MAX_SIZE;
-//     uint8_t data[CIRCULAR_BUFFER_MAX_SIZE] = { 0 };
-
-//     circular_buffer_init(&ctx, buff_size);
-
-//     for (int i = 0; i < CIRCULAR_BUFFER_MAX_SIZE; i++)
-//     {
-//         uint8_t data_in = i % 256;
-//         circular_buffer_push(&ctx, data_in);
-//         data[i] = data_in; // remember what we pushed.
-//     }
-
-//     // FIFO
-//     for (int i = 0; i < CIRCULAR_BUFFER_MAX_SIZE; i++)
-//     {
-//         uint8_t data_out = 0;
-//         circular_buffer_pop(&ctx, &data_out);
-//         ASSERT_EQ(data[i], data_out);
-//     }
-// }
