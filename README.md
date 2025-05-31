@@ -1,7 +1,7 @@
 
 # Circular Byte Buffer
 
-A simple, robust, and production-quality circular byte buffer written in C, with extensive unit tests.
+A simple, robust, and well-tested circular byte buffer written in C.
 
 ---
 
@@ -170,4 +170,4 @@ Cory McKiel
 
 - No dynamic memory usage.
 - Suitable for embedded systems.
-- Extensively tested, production-ready.
+- Extensively tested.
