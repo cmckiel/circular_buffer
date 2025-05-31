@@ -10,5 +10,8 @@ target_link_libraries(
     GTest::gtest_main
 )
 
+include(Valgrind)
+AddValgrind(CircularBufferTest)
+
 include(GoogleTest)
 gtest_discover_tests(CircularBufferTest)
