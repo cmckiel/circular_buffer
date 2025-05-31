@@ -118,13 +118,13 @@ TEST_F(CircularBufferTest, GetOverflowCountHandlesNullOverflowCount)
 
 TEST_F(CircularBufferTest, PushData)
 {
-    uint8_t data_in = 4;
+    uint8_t data_in = random_uint8();
     ASSERT_TRUE(circular_buffer_push(&ctx, data_in));
 }
 
 TEST_F(CircularBufferTest, PushPopData)
 {
-    uint8_t data_in = 0x49, data_out = 0;
+    uint8_t data_in = random_uint8(), data_out = 0;
     ASSERT_TRUE(circular_buffer_push(&ctx, data_in));
     ASSERT_TRUE(circular_buffer_pop(&ctx, &data_out));
     EXPECT_EQ(data_in, data_out);
@@ -138,7 +138,7 @@ TEST_F(CircularBufferTest, PushPopDataNTimes)
     // Push data in.
     for (size_t i = 0; i < buff_size; i++)
     {
-        data_in[i] = i % 256;
+        data_in[i] = random_uint8();
         ASSERT_TRUE(circular_buffer_push(&ctx, data_in[i]));
     }
 
@@ -159,7 +159,7 @@ TEST_F(CircularBufferTest, PushPopDataNTimes)
 TEST_F(CircularBufferTest, PeekData)
 {
     // Basic peeking.
-    uint8_t data_in = 0x32, data_out = 0;
+    uint8_t data_in = random_uint8(), data_out = 0;
     ASSERT_TRUE(circular_buffer_push(&ctx, data_in));
     ASSERT_TRUE(circular_buffer_peek(&ctx, &data_out));
     ASSERT_EQ(data_in, data_out);
@@ -172,28 +172,31 @@ TEST_F(CircularBufferTest, PeekData)
 
 TEST_F(CircularBufferTest, PeekDataNTimes)
 {
+    uint8_t data_in[buff_size] = { 0 };
+
     for (size_t i = 0; i < buff_size; i++)
     {
-        ASSERT_TRUE(circular_buffer_push(&ctx, i % 256));
+        data_in[i] = random_uint8();
+        ASSERT_TRUE(circular_buffer_push(&ctx, data_in[i]));
     }
 
     for (size_t i = 0; i < buff_size; i++)
     {
         // Peek without popping.
-        uint8_t data_out = 0;
-        ASSERT_TRUE(circular_buffer_peek(&ctx, &data_out));
-        ASSERT_EQ(data_out, i % 256);
+        uint8_t data_peeked = 0;
+        ASSERT_TRUE(circular_buffer_peek(&ctx, &data_peeked));
+        ASSERT_EQ(data_peeked, data_in[i]);
 
         // Pop and make sure data is still there.
-        data_out = 0;
+        uint8_t data_out = 0;
         ASSERT_TRUE(circular_buffer_pop(&ctx, &data_out));
-        ASSERT_EQ(data_out, i % 256);
+        ASSERT_EQ(data_out, data_peeked);
     }
 }
 
 TEST_F(CircularBufferTest, IsEmptyReturnsFalseForNonEmptyBuffer)
 {
-    uint8_t data_in = 24;
+    uint8_t data_in = random_uint8();
     ASSERT_TRUE(circular_buffer_push(&ctx, data_in)); // Non empty buffer.
     ASSERT_FALSE(circular_buffer_is_empty(&ctx));
 }
@@ -205,7 +208,7 @@ TEST_F(CircularBufferTest, IsEmptyReturnsTrueForFreshBuffer)
 
 TEST_F(CircularBufferTest, IsEmptyReturnsTrueForEmptyBuffer)
 {
-    uint8_t data_in = 24, data_out = 0;
+    uint8_t data_in = random_uint8(), data_out = 0;
     ASSERT_TRUE(circular_buffer_push(&ctx, data_in));
     ASSERT_TRUE(circular_buffer_pop(&ctx, &data_out));
     ASSERT_TRUE(circular_buffer_is_empty(&ctx));
@@ -219,7 +222,7 @@ TEST_F(CircularBufferTest, GetOverflowCountRetrievesCorrectCount)
 
     for (size_t i = 0; i < (buff_size + amount_to_overflow); i++)
     {
-        ASSERT_TRUE(circular_buffer_push(&ctx, i % 256));
+        ASSERT_TRUE(circular_buffer_push(&ctx, random_uint8()));
     }
 
     // Verify the overflow amounts.
@@ -229,7 +232,7 @@ TEST_F(CircularBufferTest, GetOverflowCountRetrievesCorrectCount)
     // Write more values, should overflow by a total of (amount_to_overflow + second_amount_to_overflow) now.
     for (size_t i = 0; i < second_amount_to_overflow; i++)
     {
-        ASSERT_TRUE(circular_buffer_push(&ctx, i % 256));
+        ASSERT_TRUE(circular_buffer_push(&ctx, random_uint8()));
     }
 
     // Verify the overflow increased as expected.
@@ -245,7 +248,7 @@ TEST_F(CircularBufferTest, ClearOverflowCount)
 
     for (size_t i = 0; i < (buff_size + amount_to_overflow); i++)
     {
-        ASSERT_TRUE(circular_buffer_push(&ctx, i % 256));
+        ASSERT_TRUE(circular_buffer_push(&ctx, random_uint8()));
     }
 
     // Confirm some non-zero overflow has occurred.
