@@ -93,11 +93,24 @@ Unit tests are provided under `circular_buffer_test.cc` using [Google Test](http
 mkdir build
 cd build
 cmake ..
-make
-./circular_buffer_tests
+cmake --build .
+ctest .
 ```
 
 > (Assumes CMake project setup and Google Test installed)
+
+### Run Valgrind Memcheck
+
+This Project includes a build target for run Valgrind Memcheck on the unit test suite to verify that no memory is leaked or accessed incorrectly.
+
+To run:
+```bash
+mkdir build
+cd build
+cmake ..
+cmake --build . -t valgrind
+```
+This runs all of the tests as well and verifies correct memory handling, producing a report at the end.
 
 ---
 
@@ -111,6 +124,12 @@ You can build and integrate this library into any C99-compliant project.
 - `circular_buffer.c`  (implementation)
 - `circular_buffer_test.cc`  (test suite)
 - `main.c` (simple demonstration)
+
+### Dev container
+
+A dev container was added for convenience. For example, when developing on Apple silicon valgrind is not available natively. The container solves that.
+If you install the dev container extension on vscode and have docker installed, you can use the container. Otherwise, you'll have to set up your own dev environment
+to inlcude cmake, gcc, gtest, valgrind, etc.
 
 ---
 
