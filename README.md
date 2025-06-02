@@ -1,7 +1,7 @@
 
 # Circular Byte Buffer
 
-A simple, robust, and well-tested circular byte buffer written in C.
+A simple, robust, and well-tested circular byte buffer written in C with embedded applications in mind.
 
 ---
 
@@ -16,15 +16,22 @@ Designed for embedded systems or performance-critical applications where heap al
 ## Features
 
 - Fixed-capacity circular buffer.
+- Zero dynamic memory allocations.
+- Prioritizes safety and reliability over flexibility.
 - Supports multiple independent buffer instances.
 - Automatic overwrite of oldest data when buffer is full.
 - Defensive runtime validation to prevent data corruption.
 - Full unit test suite using Google Test.
-- Pure C99 implementation (portable).
-- Zero dynamic memory allocations.
-- Peek API for non-destructive reads.
 
 ---
+
+## Thread Safety
+> ⚠ This implementation is **not thread-safe** by design.
+
+This allows you to apply appropriate protections depending on your platform:
+    - Critical section / interrupt disabling (bare-metal)
+    - Mutex (RTOS, multithreaded)
+    - Lock-free synchronization (advanced)
 
 ## API
 
@@ -49,6 +56,7 @@ The caller is responsible for:
 
 - Allocating and maintaining `circular_buffer_ctx` instances.
 - Not modifying `ctx` fields directly after initialization.
+- Ensuring thread-safety.
 
 ### Functions
 
@@ -58,6 +66,8 @@ bool circular_buffer_push(circular_buffer_ctx *ctx, uint8_t data);
 bool circular_buffer_pop(circular_buffer_ctx *ctx, uint8_t *data);
 bool circular_buffer_peek(circular_buffer_ctx *ctx, uint8_t *data);
 bool circular_buffer_is_empty(circular_buffer_ctx *ctx);
+bool circular_buffer_get_overflow_count(circular_buffer_ctx *ctx, uint32_t *overflow_count);
+bool circular_buffer_clear_overflow_count(circular_buffer_ctx *ctx);
 ```
 
 - `circular_buffer_init()` initializes a buffer instance.
@@ -65,6 +75,8 @@ bool circular_buffer_is_empty(circular_buffer_ctx *ctx);
 - `circular_buffer_pop()` retrieves the oldest data from the buffer.
 - `circular_buffer_peek()` allows looking at the next data without removing it.
 - `circular_buffer_is_empty()` quickly informs if there is data in the buffer.
+- `circular_buffer_get_overflow_count()` retrieves the number of bytes lost to overflow.
+- `circular_buffer_clear_overflow_count()` resets the overflow count.
 - All functions return `true` on success, `false` on failure (except `is_empty()`).
 
 ---

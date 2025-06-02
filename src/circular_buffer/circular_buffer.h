@@ -1,3 +1,12 @@
+/**
+ * @file circular_buffer.h
+ * @brief A circular byte buffer for embedded hardware drivers in constrained environments
+ * where correctness and safety are greater concerns than flexibility.
+ *
+ * @note Not thread-safe. This is intentional to allow the user to decide how best to implement
+ * thread-safety, whether that is using the standard library, an RTOS, or interrupt disabling.
+ * Make sure to wrap the calls with the proper protections.
+ */
 #ifndef _CIRCULAR_BUFFER_H
 #define _CIRCULAR_BUFFER_H
 
@@ -55,7 +64,7 @@ bool circular_buffer_pop(circular_buffer_ctx *ctx, uint8_t *data);
  *
  * @return true on success.
  */
-bool circular_buffer_peek(circular_buffer_ctx *ctx, uint8_t *data);
+bool circular_buffer_peek(const circular_buffer_ctx *ctx, uint8_t *data);
 
 /**
  * @brief Use to check if there is anything in the buffer.
@@ -65,7 +74,7 @@ bool circular_buffer_peek(circular_buffer_ctx *ctx, uint8_t *data);
  * @return true if the buffer is empty or if the ctx is NULL, false if there
  *          are items in the buffer.
  */
-bool circular_buffer_is_empty(circular_buffer_ctx *ctx);
+bool circular_buffer_is_empty(const circular_buffer_ctx *ctx);
 
 /**
  * @brief Retrieve the number of bytes that have been overwritten due to overflow.
@@ -75,7 +84,7 @@ bool circular_buffer_is_empty(circular_buffer_ctx *ctx);
  *
  * @return true if the data was successfully retrieved. false otherwise.
  */
-bool circular_buffer_get_overflow_count(circular_buffer_ctx *ctx, uint32_t *overflow_count);
+bool circular_buffer_get_overflow_count(const circular_buffer_ctx *ctx, uint32_t *overflow_count);
 
 /**
  * @brief Reset the overflow count for this buffer.

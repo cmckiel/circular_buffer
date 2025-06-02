@@ -67,7 +67,7 @@ bool circular_buffer_pop(circular_buffer_ctx *ctx, uint8_t *data)
     return res;
 }
 
-bool circular_buffer_peek(circular_buffer_ctx *ctx, uint8_t *data)
+bool circular_buffer_peek(const circular_buffer_ctx *ctx, uint8_t *data)
 {
     bool res = false;
 
@@ -80,7 +80,7 @@ bool circular_buffer_peek(circular_buffer_ctx *ctx, uint8_t *data)
     return res;
 }
 
-bool circular_buffer_is_empty(circular_buffer_ctx *ctx)
+bool circular_buffer_is_empty(const circular_buffer_ctx *ctx)
 {
     bool res = true; // Consider a NULL ctx to be an empty buffer.
 
@@ -92,7 +92,7 @@ bool circular_buffer_is_empty(circular_buffer_ctx *ctx)
     return res;
 }
 
-bool circular_buffer_get_overflow_count(circular_buffer_ctx *ctx, uint32_t *overflow_count)
+bool circular_buffer_get_overflow_count(const circular_buffer_ctx *ctx, uint32_t *overflow_count)
 {
     bool res = false;
 
