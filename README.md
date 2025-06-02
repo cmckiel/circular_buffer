@@ -116,7 +116,7 @@ ctest .
 
 ### Run Valgrind Memcheck
 
-This Project includes a build target for run Valgrind Memcheck on the unit test suite to verify that no memory is leaked or accessed incorrectly.
+This Project includes a build target to run Valgrind Memcheck on the unit test suite to verify that no memory is leaked or accessed incorrectly.
 
 To run:
 ```bash
@@ -125,7 +125,7 @@ cd build
 cmake ..
 cmake --build . -t valgrind
 ```
-This runs all of the tests as well and verifies correct memory handling, producing a report at the end.
+This runs all of the tests and verifies correct memory handling.
 
 ---
 
@@ -142,7 +142,7 @@ You can build and integrate this library into any C99-compliant project.
 
 ### Dev container
 
-A dev container was added for convenience. For example, when developing on Apple silicon valgrind is not available natively. The container solves that.
+A dev container is included for convenience. For example, when developing on Apple silicon valgrind is not available natively. The container solves that.
 If you install the dev container extension on vscode and have docker installed, you can use the container. Otherwise, you'll have to set up your own dev environment
 to include cmake, gcc, gtest, valgrind, etc.
 
@@ -171,7 +171,7 @@ if (circular_buffer_init(&ctx, 256)) {
 
 ## License
 
-@todo
+MIT
 
 ---
 
