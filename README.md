@@ -29,9 +29,9 @@ Designed for embedded systems or performance-critical applications where heap al
 > ⚠ This implementation is **not thread-safe** by design.
 
 This allows you to apply appropriate protections depending on your platform:
-    - Critical section / interrupt disabling (bare-metal)
-    - Mutex (RTOS, multithreaded)
-    - Lock-free synchronization (advanced)
+- Critical section / interrupt disabling (bare-metal)
+- Mutex (RTOS, multithreaded)
+- Lock-free synchronization (advanced)
 
 ## API
 
