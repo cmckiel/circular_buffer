@@ -186,3 +186,8 @@ Cory McKiel
 - No dynamic memory usage.
 - Suitable for embedded systems.
 - Extensively tested.
+
+## Roadmap
+
+- Add `circular_buffer_get_available_bytes()`.
+- Enforce `overflow_count` saturation at `UINT32_MAX` to prevent rollover.
