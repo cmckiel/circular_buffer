@@ -1,4 +1,3 @@
-add_executable(CircularBuffer main.c)
-
 add_subdirectory(circular_buffer)
-target_link_libraries(CircularBuffer PRIVATE circular_buffer)
+add_executable(circular_buffer_main main.c)
+target_link_libraries(circular_buffer_main PRIVATE circular_buffer)
