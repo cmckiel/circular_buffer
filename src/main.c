@@ -21,7 +21,7 @@ int main(int argc, char **argv)
     // Push the regular message into the buffer one byte at a time.
     for (size_t i = 0; i < sizeof(regular_message); i++)
     {
-        if (circular_buffer_push(&ctx, regular_message[i]) == false)
+        if (circular_buffer_push_with_overwrite(&ctx, regular_message[i]) == false)
         {
             fprintf(stderr, "Buffer push failed!\n");
             return -1;
@@ -45,7 +45,7 @@ int main(int argc, char **argv)
     // Put the message into the buffer, and expect overwriting to occur.
     for (size_t i = 0; i < sizeof(message_with_overwrite); i++)
     {
-        if (circular_buffer_push(&ctx, message_with_overwrite[i]) == false)
+        if (circular_buffer_push_with_overwrite(&ctx, message_with_overwrite[i]) == false)
         {
             fprintf(stderr, "Buffer push failed!\n");
             return -1;

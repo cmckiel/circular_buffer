@@ -28,7 +28,7 @@ bool circular_buffer_init(circular_buffer_ctx *ctx, size_t buff_size)
     return res;
 }
 
-bool circular_buffer_push(circular_buffer_ctx *ctx, uint8_t data)
+bool circular_buffer_push_with_overwrite(circular_buffer_ctx *ctx, uint8_t data)
 {
     bool res = false;
 

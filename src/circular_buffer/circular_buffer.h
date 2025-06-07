@@ -44,7 +44,7 @@ bool circular_buffer_init(circular_buffer_ctx *ctx, size_t buff_size);
  *
  * @return true on success.
 */
-bool circular_buffer_push(circular_buffer_ctx *ctx, uint8_t data);
+bool circular_buffer_push_with_overwrite(circular_buffer_ctx *ctx, uint8_t data);
 
 /**
  * @brief Removes an item from the circular buffer.
