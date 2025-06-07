@@ -114,6 +114,18 @@ TEST_F(CircularBufferTest, IsFullHandlesNullCtx)
     ASSERT_FALSE(circular_buffer_is_full(&ctx));
 }
 
+TEST_F(CircularBufferTest, GetCurrentCapacityHandlesNullCtx)
+{
+    size_t capacity = 0;
+    ASSERT_FALSE(circular_buffer_get_current_capacity(NULL, &capacity));
+}
+
+TEST_F(CircularBufferTest, GetCurrentCapacityHandlesNullCapacity)
+{
+    size_t capacity = 0;
+    ASSERT_FALSE(circular_buffer_get_current_capacity(&ctx, NULL));
+}
+
 TEST_F(CircularBufferTest, GetOverflowCountHandlesNullCtx)
 {
     uint32_t overflow_count = 0;
@@ -279,6 +291,22 @@ TEST_F(CircularBufferTest, IsFullReturnsTrueForFullBuffer)
 TEST_F(CircularBufferTest, IsFullReturnsFalseForEmptyBuffer)
 {
     ASSERT_FALSE(circular_buffer_is_full(&ctx));
+}
+
+TEST_F(CircularBufferTest, GetCurrentCapacityGetsCorrectCount)
+{
+    size_t data_in_count = 20; // Insert 20 items into buffer.
+    size_t buffer_capacity_actual = 0;
+    size_t buffer_capacity_expected = buff_size - data_in_count;
+
+    for (size_t i = 0; i < data_in_count; i++)
+    {
+        ASSERT_TRUE(circular_buffer_push_no_overwrite(&ctx, random_uint8()));
+    }
+
+    ASSERT_TRUE(circular_buffer_get_current_capacity(&ctx, &buffer_capacity_actual));
+
+    ASSERT_EQ(buffer_capacity_expected, buffer_capacity_actual);
 }
 
 TEST_F(CircularBufferTest, GetOverflowCountRetrievesCorrectCount)

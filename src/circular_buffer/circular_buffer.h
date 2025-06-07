@@ -98,6 +98,16 @@ bool circular_buffer_is_empty(const circular_buffer_ctx *ctx);
 bool circular_buffer_is_full(const circular_buffer_ctx *ctx);
 
 /**
+ * @brief Use to retrieve the amount of free space in the buffer.
+ *
+ * @param ctx A handle for the buffer.
+ * @param capacity A way to return the current free capacity in bytes.
+ *
+ * @return true on success, false otherwise.
+ */
+bool circular_buffer_get_current_capacity(const circular_buffer_ctx *ctx, size_t *capacity);
+
+/**
  * @brief Retrieve the number of bytes that have been overwritten due to overflow.
  *
  * @param ctx A handle for the buffer.

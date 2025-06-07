@@ -120,6 +120,19 @@ bool circular_buffer_is_full(const circular_buffer_ctx *ctx)
     return res;
 }
 
+bool circular_buffer_get_current_capacity(const circular_buffer_ctx *ctx, size_t *capacity)
+{
+    bool res = false;
+
+    if (capacity && ctx_is_valid(ctx))
+    {
+        *capacity = ctx->buff_size - ctx->current_byte_count;
+        res = true;
+    }
+
+    return res;
+}
+
 bool circular_buffer_get_overflow_count(const circular_buffer_ctx *ctx, uint32_t *overflow_count)
 {
     bool res = false;
