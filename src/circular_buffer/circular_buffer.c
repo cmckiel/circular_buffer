@@ -108,6 +108,18 @@ bool circular_buffer_is_empty(const circular_buffer_ctx *ctx)
     return res;
 }
 
+bool circular_buffer_is_full(const circular_buffer_ctx *ctx)
+{
+    bool res = false;
+
+    if (ctx_is_valid(ctx) && ctx->current_byte_count == ctx->buff_size)
+    {
+        res = true;
+    }
+
+    return res;
+}
+
 bool circular_buffer_get_overflow_count(const circular_buffer_ctx *ctx, uint32_t *overflow_count)
 {
     bool res = false;

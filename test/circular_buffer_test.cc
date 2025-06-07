@@ -109,6 +109,11 @@ TEST_F(CircularBufferTest, IsEmptyHandlesNullCtx)
     ASSERT_TRUE(circular_buffer_is_empty(NULL)); // Report the buffer is "empty" for NULL ctx's.
 }
 
+TEST_F(CircularBufferTest, IsFullHandlesNullCtx)
+{
+    ASSERT_FALSE(circular_buffer_is_full(&ctx));
+}
+
 TEST_F(CircularBufferTest, GetOverflowCountHandlesNullCtx)
 {
     uint32_t overflow_count = 0;
@@ -258,6 +263,22 @@ TEST_F(CircularBufferTest, IsEmptyReturnsTrueForEmptyBuffer)
     ASSERT_TRUE(circular_buffer_push_with_overwrite(&ctx, data_in));
     ASSERT_TRUE(circular_buffer_pop(&ctx, &data_out));
     ASSERT_TRUE(circular_buffer_is_empty(&ctx));
+}
+
+TEST_F(CircularBufferTest, IsFullReturnsTrueForFullBuffer)
+{
+    // Fill the buffer.
+    for (size_t i = 0; i < buff_size; i++)
+    {
+        ASSERT_TRUE(circular_buffer_push_no_overwrite(&ctx, random_uint8()));
+    }
+
+    ASSERT_TRUE(circular_buffer_is_full(&ctx));
+}
+
+TEST_F(CircularBufferTest, IsFullReturnsFalseForEmptyBuffer)
+{
+    ASSERT_FALSE(circular_buffer_is_full(&ctx));
 }
 
 TEST_F(CircularBufferTest, GetOverflowCountRetrievesCorrectCount)

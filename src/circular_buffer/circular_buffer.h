@@ -89,6 +89,15 @@ bool circular_buffer_peek(const circular_buffer_ctx *ctx, uint8_t *data);
 bool circular_buffer_is_empty(const circular_buffer_ctx *ctx);
 
 /**
+ * @brief Use to check if the buffer is full.
+ *
+ * @param ctx A handle for the buffer.
+ *
+ * @return true if the buffer is full and false if it is not full.
+ */
+bool circular_buffer_is_full(const circular_buffer_ctx *ctx);
+
+/**
  * @brief Retrieve the number of bytes that have been overwritten due to overflow.
  *
  * @param ctx A handle for the buffer.
