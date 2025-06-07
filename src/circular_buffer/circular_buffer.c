@@ -52,6 +52,22 @@ bool circular_buffer_push_with_overwrite(circular_buffer_ctx *ctx, uint8_t data)
     return res;
 }
 
+bool circular_buffer_push_no_overwrite(circular_buffer_ctx *ctx, uint8_t data)
+{
+    bool res = false;
+
+    if (ctx_is_valid(ctx) && ctx->current_byte_count < ctx->buff_size)
+    {
+        ctx->buffer[ctx->head] = data;
+        ctx->head = (ctx->head + 1) % ctx->buff_size;
+        ctx->current_byte_count++;
+
+        res = true;
+    }
+
+    return res;
+}
+
 bool circular_buffer_pop(circular_buffer_ctx *ctx, uint8_t *data)
 {
     bool res = false;

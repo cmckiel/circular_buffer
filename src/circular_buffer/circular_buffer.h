@@ -38,6 +38,7 @@ bool circular_buffer_init(circular_buffer_ctx *ctx, size_t buff_size);
 
 /**
  * @brief Adds an item to the circular buffer.
+ * Will overwrite the oldest data in buffer if full on push.
  *
  * @param ctx A handle for the buffer.
  * @param data A piece of data to push.
@@ -45,6 +46,17 @@ bool circular_buffer_init(circular_buffer_ctx *ctx, size_t buff_size);
  * @return true on success.
 */
 bool circular_buffer_push_with_overwrite(circular_buffer_ctx *ctx, uint8_t data);
+
+/**
+ * @brief Adds an item to the circular buffer.
+ * Never overwrites data in buffer. Fails if buffer is full.
+ *
+ * @param ctx A handle for the buffer.
+ * @param data A piece of data to push.
+ *
+ * @return true on success.
+*/
+bool circular_buffer_push_no_overwrite(circular_buffer_ctx *ctx, uint8_t data);
 
 /**
  * @brief Removes an item from the circular buffer.

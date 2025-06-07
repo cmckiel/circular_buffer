@@ -81,10 +81,16 @@ TEST_F(CircularBufferTest, PopHandlesNullData)
     ASSERT_FALSE(circular_buffer_pop(&ctx, NULL));
 }
 
-TEST_F(CircularBufferTest, PushHandlesNullCtx)
+TEST_F(CircularBufferTest, PushWithOverwriteHandlesNullCtx)
 {
     uint8_t data_in = 0;
     ASSERT_FALSE(circular_buffer_push_with_overwrite(NULL, data_in));
+}
+
+TEST_F(CircularBufferTest, PushNoOverwriteHandlesNullCtx)
+{
+    uint8_t data_in = 0;
+    ASSERT_FALSE(circular_buffer_push_no_overwrite(NULL, data_in));
 }
 
 TEST_F(CircularBufferTest, PeekHandlesNullCtx)
@@ -122,10 +128,24 @@ TEST_F(CircularBufferTest, PushData)
     ASSERT_TRUE(circular_buffer_push_with_overwrite(&ctx, data_in));
 }
 
+TEST_F(CircularBufferTest, PushDataNoOverwrite)
+{
+    uint8_t data_in = random_uint8();
+    ASSERT_TRUE(circular_buffer_push_no_overwrite(&ctx, data_in));
+}
+
 TEST_F(CircularBufferTest, PushPopData)
 {
     uint8_t data_in = random_uint8(), data_out = 0;
     ASSERT_TRUE(circular_buffer_push_with_overwrite(&ctx, data_in));
+    ASSERT_TRUE(circular_buffer_pop(&ctx, &data_out));
+    EXPECT_EQ(data_in, data_out);
+}
+
+TEST_F(CircularBufferTest, PushPopDataNoOverwrite)
+{
+    uint8_t data_in = random_uint8(), data_out = 0;
+    ASSERT_TRUE(circular_buffer_push_no_overwrite(&ctx, data_in));
     ASSERT_TRUE(circular_buffer_pop(&ctx, &data_out));
     EXPECT_EQ(data_in, data_out);
 }
@@ -140,6 +160,32 @@ TEST_F(CircularBufferTest, PushPopDataNTimes)
     {
         data_in[i] = random_uint8();
         ASSERT_TRUE(circular_buffer_push_with_overwrite(&ctx, data_in[i]));
+    }
+
+    // FIFO
+    // Pop data out.
+    for (size_t i = 0; i < buff_size; i++)
+    {
+        ASSERT_TRUE(circular_buffer_pop(&ctx, &data_out[i]));
+    }
+
+    // Verify what was pushed was popped.
+    for (int i = 0; i < buff_size; i++)
+    {
+        EXPECT_EQ(data_in[i], data_out[i]);
+    }
+}
+
+TEST_F(CircularBufferTest, PushPopDataNTimesNoOverwrite)
+{
+    uint8_t data_in[buff_size] = { 0 };
+    uint8_t data_out[buff_size] = { 0 };
+
+    // Push data in.
+    for (size_t i = 0; i < buff_size; i++)
+    {
+        data_in[i] = random_uint8();
+        ASSERT_TRUE(circular_buffer_push_no_overwrite(&ctx, data_in[i]));
     }
 
     // FIFO
@@ -502,6 +548,37 @@ TEST_F(CircularBufferTest, PeekFailsForEmptyBuffer)
     ASSERT_FALSE(circular_buffer_peek(&ctx, &data_out));
 }
 
+TEST_F(CircularBufferTest, PushNoOverwriteFailsForFullBuffer)
+{
+    uint8_t data_peek = 0;
+    uint8_t data_in[buff_size] = { 0 };
+    uint8_t data_out[buff_size] = { 0 };
+
+    // Fill the buffer.
+    for (size_t i = 0; i < buff_size; i++)
+    {
+        data_in[i] = random_uint8();
+        ASSERT_TRUE(circular_buffer_push_no_overwrite(&ctx, data_in[i]));
+    }
+
+    // Peak at the oldest element.
+    ASSERT_TRUE(circular_buffer_peek(&ctx, &data_peek));
+    // Attempt to push a different value, which would threaten to overwrite the oldest.
+    ASSERT_FALSE(circular_buffer_push_no_overwrite(&ctx, data_peek+1));
+
+    // Remove everything from the buffer.
+    for (size_t i = 0; i < buff_size; i++)
+    {
+        ASSERT_TRUE(circular_buffer_pop(&ctx, &data_out[i]));
+    }
+
+    // Ensure that nothing got deleted or overwritten.
+    for (size_t i = 0; i < buff_size; i++)
+    {
+        EXPECT_EQ(data_in[i], data_out[i]);
+    }
+}
+
 TEST_F(CircularBufferTest, PopProtectsAgainstCorruptCtx)
 {
     uint8_t data_out = 0;
@@ -516,6 +593,14 @@ TEST_F(CircularBufferTest, PushProtectsAgainstCorruptCtx)
     circular_buffer_ctx corrupt_ctx = ctx;
     corrupt_ctx.head = CIRCULAR_BUFFER_MAX_SIZE; // out of bounds index
     ASSERT_FALSE(circular_buffer_push_with_overwrite(&corrupt_ctx, data_in));
+}
+
+TEST_F(CircularBufferTest, PushNoOverwriteProtectsAgainstCorruptCtx)
+{
+    uint8_t data_in = 0;
+    circular_buffer_ctx corrupt_ctx = ctx;
+    corrupt_ctx.head = CIRCULAR_BUFFER_MAX_SIZE; // out of bounds index
+    ASSERT_FALSE(circular_buffer_push_no_overwrite(&corrupt_ctx, data_in));
 }
 
 TEST_F(CircularBufferTest, PeekProtectsAgainstCorruptCtx)
