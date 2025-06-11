@@ -14,7 +14,7 @@ int main(int argc, char **argv)
     size_t buff_size = sizeof(regular_message) + 5;
     if (circular_buffer_init(&ctx, buff_size) == false)
     {
-        fprintf(stderr, "Buffer init failed!\n");
+        (void)fprintf(stderr, "Buffer init failed!\n");
         return -1;
     }
 
@@ -23,7 +23,7 @@ int main(int argc, char **argv)
     {
         if (circular_buffer_push_with_overwrite(&ctx, regular_message[i]) == false)
         {
-            fprintf(stderr, "Buffer push failed!\n");
+            (void)fprintf(stderr, "Buffer push failed!\n");
             return -1;
         }
     }
@@ -38,7 +38,7 @@ int main(int argc, char **argv)
     // Reinit the buffer to start from scratch.
     if (circular_buffer_init(&ctx, buff_size) == false)
     {
-        fprintf(stderr, "Buffer init failed!\n");
+        (void)fprintf(stderr, "Buffer init failed!\n");
         return -1;
     }
 
@@ -47,7 +47,7 @@ int main(int argc, char **argv)
     {
         if (circular_buffer_push_with_overwrite(&ctx, message_with_overwrite[i]) == false)
         {
-            fprintf(stderr, "Buffer push failed!\n");
+            (void)fprintf(stderr, "Buffer push failed!\n");
             return -1;
         }
     }
